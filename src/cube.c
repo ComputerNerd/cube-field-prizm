@@ -1,5 +1,6 @@
-#include <display_syscalls.h>
-#include <HEAP_syscalls.h> //malloc, realloc, free
+#include <stdlib.h>
+#include <fxcg/display.h>
+#include <fxcg/rtc.h>
 #include "cube.h"
 #include "fixed.h"
 #include "graphic_functions.h"
@@ -13,7 +14,7 @@ static Cube* cube_new(int x, int z, char color)
 	Cube* cube;
 	if(cube = malloc(sizeof(Cube))) {
 		cube->x = x;
-		cube->z = z;
+		cube->z = FIX(z);
 		cube->color = color;
 	}
 	return cube;
@@ -52,7 +53,7 @@ static Cube** cube_del(Cube** list, Cube* cube)
 	return list;
 }
 
-static cube_drawBackground(int angle, int mode)
+static void cube_drawBackground(int angle, int mode)
 {
 	int x=LCD_WIDTH_PX, y=0;
 	if(mode == 1) FillVRAM(0x0000);
@@ -70,14 +71,20 @@ void cube_init()
 	}
 }
 
-void cube_move()
+int ticksGlobal;
+void cube_move(int speed)
 {
 	int i=0;
+	int tmp=RTC_GetTicks();
 	while(cubes[i]) {
-		cubes[i]->z--;
-		if(cubes[i]->z<=0) cubes = cube_del(cubes, cubes[i]);
+		int tmp_diff = tmp - ticksGlobal;
+		if (tmp_diff <= 0)
+			tmp_diff = 1;
+		cubes[i]->z-=speed * tmp_diff;
+		if(UNFIX(cubes[i]->z)<=0) cubes = cube_del(cubes, cubes[i]);
 		else i++;
 	}
+	ticksGlobal = tmp;
 }
 
 #define abs(x) ((x)<0?-(x):x)
@@ -85,7 +92,7 @@ int cube_collision(int x)
 {
 	int i=0;
 	while(cubes[i]) {
-		if(cubes[i]->z == 15 && abs(cubes[i]->x-x)<3)
+		if(UNFIX(cubes[i]->z) == 15 && abs(cubes[i]->x-x)<3)
 			return 1;
 		i++;
 	}
@@ -141,8 +148,8 @@ void cube_draw(int _x, int angle, int mode)
 			tmp  = fmul(x[j],fcos(angle)) - fmul(y[j],fsin(angle)); // rotation
 			y[j] = fmul(x[j],fsin(angle)) + fmul(y[j],fcos(angle));
 			x[j] = tmp;
-			x[j] = fdiv( (2*x[j]), FIX(cubes[i]->z)>>4); //perspective
-			y[j] = fdiv( (2*y[j]+FIX(LCD_HEIGHT_PX/2)), FIX(cubes[i]->z)>>4);
+			x[j] = fdiv( (2*x[j]), (cubes[i]->z>>4)); //perspective
+			y[j] = fdiv( (2*y[j]+FIX(LCD_HEIGHT_PX/2)), (cubes[i]->z>>4));
 			x[j] = UNFIX(x[j]) + LCD_WIDTH_PX/2; //centring
 			y[j] = UNFIX(y[j]) + LCD_HEIGHT_PX/2;
 		}

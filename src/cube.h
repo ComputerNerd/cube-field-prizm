@@ -6,6 +6,8 @@ typedef struct {
 	char color;
 } Cube;
 
+extern int ticksGlobal;
+
 void cube_init();
 void cube_move();
 int cube_collision(int x);

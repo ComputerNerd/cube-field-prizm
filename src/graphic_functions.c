@@ -1,9 +1,10 @@
-#include "graphic_functions.h"
+#include <stdlib.h>
 #include <fxcg/display.h>
+#include "graphic_functions.h"
 
 void FillVRAM(short color)
 {
-	int i, color32bits, *VRAM = GetVRAMAdress();
+	int i, color32bits, *VRAM = GetVRAMAddress();
 	color32bits = (color<<16) | color;
 	for(i=LCD_WIDTH_PX*LCD_HEIGHT_PX/2 ; i ; i--)
 		*(VRAM++) = color32bits;
@@ -11,7 +12,7 @@ void FillVRAM(short color)
 
 void Pixel(int x, int y, short color)
 {
-	short* VRAM = GetVRAMAdress();
+	short* VRAM = GetVRAMAddress();
 	if(x>=0 && x<LCD_WIDTH_PX && y>=0 && y<LCD_HEIGHT_PX)
 		*(VRAM + y*LCD_WIDTH_PX + x) = color;
 }
@@ -19,7 +20,7 @@ void Pixel(int x, int y, short color)
 void HorizontalLine(int y, int x1, int x2, unsigned short color)
 {
 	unsigned int i, color32, *VRAM32;
-	short *VRAM = GetVRAMAdress();
+	short *VRAM = GetVRAMAddress();
     if(y<0 || y>LCD_HEIGHT_PX || (x1<0 && x2<0) || (x1>LCD_WIDTH_PX && x2>LCD_WIDTH_PX)) return;
     if(x1 > x2) { i = x1; x1 = x2; x2 = i; }
     if(x1 < 0) x1 = 0;
@@ -38,15 +39,17 @@ void HorizontalLine(int y, int x1, int x2, unsigned short color)
 void HorizontalLineAlpha(int y, int x1, int x2, short color, char alpha)
 {
 	unsigned int i;
-	short *VRAM = GetVRAMAdress();
+	short *VRAM = GetVRAMAddress();
     if(y<0 || y>LCD_HEIGHT_PX || (x1<0 && x2<0) || (x1>LCD_WIDTH_PX && x2>LCD_WIDTH_PX)) return;
     if(x1 > x2) { i = x1; x1 = x2; x2 = i; }
     if(x1 < 0) x1 = 0;
     if(x2 >= LCD_WIDTH_PX) x2 = LCD_WIDTH_PX-1;
 	VRAM += y*LCD_WIDTH_PX + x1;
-	for(i=x2-x1+1 ; i ; i--)
-		(*VRAM++) = ((((color & 0xF81F) * alpha + (*VRAM & 0xF81F) * (32-alpha)) >> 5) & 0xF81F) |
+	for(i=x2-x1+1 ; i ; i--) {
+		*VRAM = ((((color & 0xF81F) * alpha + (*VRAM & 0xF81F) * (32-alpha)) >> 5) & 0xF81F) |
 			        ((((color & 0x07E0) * alpha + (*VRAM & 0x07E0) * (32-alpha)) >> 5) & 0x07E0);
+		++VRAM;
+	}
 }
 
 void Line(int x1, int y1, int x2, int y2, short color)
@@ -151,9 +154,9 @@ void FilledConvexPolygon(const int* x, const int* y, int nb_vertices, short colo
 	free(empty);
 }
 
-void CopySpriteMasked(short* bitmap, int x, int y, int width, int height, short mask)
+void CopySpriteMasked(const short* bitmap, int x, int y, int width, int height, short mask)
 {
-	short* VRAM = GetVRAMAdress();
+	short* VRAM = GetVRAMAddress();
 
 	int y_index;
 	int x_index;

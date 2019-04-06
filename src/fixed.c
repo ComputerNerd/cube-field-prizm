@@ -42,7 +42,7 @@ fix fmul(fix x, fix y) {
 
 // Precomputed table of sinus value, between 0 and 90° inclued with step of 0.1°.
 // Values are in fixed 30 bits of decimal.
-int precalc_sin[901] = {
+static const int precalc_sin[901] = {
 	0,			1874032,	3748058,	5622073,	7496071,	9370046,	11243993,
 	13117905,	14991777,	16865604,	18739378,	20613096,	22486752,	24360338,
 	26233852,	28107284,	29980632,	31853888,	33727044,	35600100,	37473048,

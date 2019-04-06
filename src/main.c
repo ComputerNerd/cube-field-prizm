@@ -1,10 +1,10 @@
-#include <display_syscalls.h>
+#include <fxcg/rtc.h>
 
+#include "text.h"
 #include "cube.h"
 #include "graphic_functions.h"
 #include "key.h"
 #include "rand.h"
-#include "time.h"
 
 void PrintInt(unsigned int n)
 {
@@ -27,9 +27,10 @@ void wait(int ticks)
 int main(void) {
 	int angle=0, x=0, run=0, score, best_score=0, mode, color, speed, speedup;
 	char str[20];
-	srand(time_getTicks());
+	srand(RTC_GetTicks());
 	cube_init();
 	while(key_down(K_EXE));
+	ticksGlobal = RTC_GetTicks();
 	while(!key_down(K_EXIT)) {
 		if(run) {
 			switch(++score) {
@@ -53,15 +54,14 @@ int main(void) {
 			if(cube_collision(x)) { run=0; if(score>best_score) best_score=score; }
 			if(key_down(K_LEFT)) { if(angle<20) angle++; x--; } else if(angle > 0) angle--;
 			if(key_down(K_RIGHT)) { if(angle>-20) angle--; x++; } else if(angle < 0) angle++;
-			wait(3-speed);
+			cube_move((speed+1)<<13);
 		} else {
 			if(angle > 0) angle--;
 			if(angle < 0) angle++;
 			mode = color = score = speed = speedup = 0;
-			wait(6);
+			cube_move(1<<12);
 			if(key_down(K_EXE)) run = mode = 1;
 		}
-		cube_move();
 		cube_generate(x, mode);
 		cube_draw(x, angle, color);
 		if(run) {
