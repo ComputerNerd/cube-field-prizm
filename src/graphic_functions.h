@@ -4,7 +4,6 @@
 #define LCD_WIDTH_PX 384
 #define LCD_HEIGHT_PX 216
 
-void *GetVRAMAdress(void);
 void FillVRAM(short color);
 void Pixel(int x, int y, short color);
 void HorizontalLine(int y, int x1, int x2, unsigned short color);

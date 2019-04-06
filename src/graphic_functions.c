@@ -1,15 +1,5 @@
 #include "graphic_functions.h"
-#include <HEAP_syscalls.h> //malloc, free
-
-void* GetVRAMAdress()
-{
-	asm("mov.l syscall_adress, r2\n"
-	    "mov.l getVRAM, r0\n"
-	    "jmp @r2\n"
-	    "nop\n"
-	    "syscall_adress: .long 0x80020070\n"
-	    "getVRAM: .long 0x01E6");
-}
+#include <fxcg/display.h>
 
 void FillVRAM(short color)
 {
